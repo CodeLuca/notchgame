@@ -18,6 +18,8 @@ var mainState = {
         this.player = game.add.sprite(250, 170, 'player');
         this.stars = game.add.group();
         this.stars.enableBody = true;
+        this.steves = game.add.group();
+        this.steves.enableBody = true;        
         this.player.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(this.player);
         this.player.body.gravity.y = 1000;
@@ -25,18 +27,21 @@ var mainState = {
         this.createWorld();
         this.addStar();
         this.score = 0;
+        this.timer = game.time.events.loop(5000, this.createSteve, this);
+        this.timer = game.time.events.loop(5000, this.longLeft, this);
+        this.timer = game.time.events.loop(10000, this.longRight, this);
+        this.timer = game.time.events.loop(2000, this.moveBlockRight, this);
+        this.timer = game.time.events.loop(1000, this.moveBlockLeft, this);
         this.labelScore = game.add.text(30, 5, '0', { font: "30px Impact", fill: "#B8B8B8" });  
         this.labelScore.text = "0";
-        this.steveSprite = game.add.sprite(100, 200, 'steve');
     },
     
     update: function(){
         this.player.outOfBoundsKill = true;
         game.physics.arcade.collide(this.player, this.walls);
         game.physics.arcade.collide(this.star, this.player, this.hitStar, null, this);  
+        game.physics.arcade.collide(this.player, this.steves, this.endGame, null, this);  
         this.movePlayer();
-        this.steveSprite.y += 1;
-//        this.steveSprite.rotate(3);
         if(this.player.y > 340){
             game.state.start('main');
         }
@@ -66,17 +71,17 @@ var mainState = {
         game.add.sprite(0, 0, 'wallV', 0, this.walls); //Left wall
         game.add.sprite(480, 0, 'wallV', 0, this.walls); //Right wall
        
-        var one = game.add.sprite(175, 250, 'wallH', 0, this.walls);
-        one.scale.setTo(0.75, 1);
+        this.one = game.add.sprite(175, 250, 'wallH', 0, this.walls);
+        this.one.scale.setTo(0.75, 1);
         
         var two = game.add.sprite(0, 180, 'wallH', 0, this.walls);
         two.scale.setTo(0.5, 1);
         
-        var three = game.add.sprite(300, 160, 'wallH', 0, this.walls);
-        three.scale.setTo(0.5, 1);
+        this.three = game.add.sprite(300, 160, 'wallH', 0, this.walls);
+        this.three.scale.setTo(0.5, 1);
         
-        var four = game.add.sprite(200, 140, 'wallH', 0, this.walls);
-        four.scale.setTo(0.10, 1);
+        this.four = game.add.sprite(200, 140, 'wallH', 0, this.walls);
+        this.four.scale.setTo(0.10, 1);
         
         var five = game.add.sprite(100, 70, 'wallH', 0, this.walls);
         five.scale.setTo(0.30, 1);
@@ -84,13 +89,21 @@ var mainState = {
         var bottom = game.add.sprite(100, 320, 'wallH', 0, this.walls);
         bottom.scale.setTo(1.5, 1);
         
+        var top = game.add.sprite(0, 0, 'wallH', 0, this.walls);
+        top.scale.setTo(2.5, 1);
+        
+        var leftsmall = game.add.sprite(460, 320, 'wallH', 0, this.walls);
+        leftsmall.scale.setTo(0.10, 1);
+        
+        var rightsmall = game.add.sprite(20, 320, 'wallH', 0, this.walls);
+        rightsmall.scale.setTo(0.10, 1);
         this.walls.setAll('body.immovable', true);
     },
     addStar: function(){
         var level = Math.floor((Math.random() * 4) + 1);
         var x = Math.random();
         if(x < 0.1){x + 0.1;}
-        x = (x + 0.1) * 450 - 20;
+        x = (x + 0.1) * 450 - 30;
         
         var y;
         if(level == 1){
@@ -116,6 +129,31 @@ var mainState = {
         this.addStar();
         this.score += 1;
         this.labelScore.text = this.score;
+    },
+    createSteve: function(){
+        var x = Math.random();
+        if(x < 0.1){x + 0.1;}
+        x = (x + 0.1) * 450 - 30;
+        
+        this.steveSprite = game.add.sprite(x, -5, 'steve', 0, this.steves);
+        this.steveSprite.body.velocity.y = (this.score + 1) * 10;
+    },
+    endGame: function(){
+        game.state.start('main',true,false);
+    },
+    moveBlockLeft: function(){
+        this.four.body.velocity.x = -25;
+        this.one.body.velocity.x = 20;
+    },
+    moveBlockRight: function(){
+        this.four.body.velocity.x = 25;
+        this.one.body.velocity.x = -20;
+    },
+    longLeft: function(){
+        this.three.body.velocity.x = -10;
+    },
+    longRight: function(){
+        this.three.body.velocity.x = 10;
     }
 };
 game.state.add('main', mainState);
